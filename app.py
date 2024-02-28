@@ -2,7 +2,7 @@
 
 import os
 
-from flask import Flask
+from flask import Flask, redirect, render_template, request
 from models import db, connect_db, User
 
 
@@ -19,7 +19,7 @@ connect_db(app)
 def redirect_to_users():
     """Redirects to the users route"""
 
-    redirect ("/users")
+    return redirect ("/users")
 
 
 @app.get("/users")
@@ -54,4 +54,26 @@ def show_user(user_id):
     """Show info on an user."""
 
     user = User.query.get_or_404(user_id)
-    return render_template("user-profile.html" user=user)
+    return render_template("user-profile.html", user=user)
+
+
+@app.get('/users/<int:user_id>/edit')
+def show_edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('edit-profile.html', user = user)
+
+
+
+@app.post('/users/<int:user_id>/edit')
+def edit_user(user_id):
+    current_user = User.query.get(user_id)
+
+    current_user.first_name = request.form['first_name']
+    current_user.last_name = request.form['last_name']
+    current_user.img_url = request.form['image_url']
+
+    db.session.add(current_user)
+    db.session.commit()
+
+    return redirect('/users')
+

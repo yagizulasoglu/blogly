@@ -9,9 +9,9 @@
 </form>
 
 <ul>Posts
-  {% for post in posts %}
+  {% for post in user.posts %}
   <li><a href="/posts/{{post.id}}">{{ post.title }}</a></li>
   {% endfor %}
 </ul>
-<button action="/users/{{user_id}}/posts/new">Add Post</button>
+<a href="/users/{{user.id}}/posts/new"><button>Add Post</button></a>
 {% endblock %}

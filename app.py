@@ -3,7 +3,7 @@
 import os
 
 from flask import Flask, redirect, render_template, request
-from models import db, connect_db, User
+from models import db, connect_db, User, Post
 
 
 app = Flask(__name__)
@@ -49,7 +49,7 @@ def new_user_info():
 
     return redirect('/users')
 
-@app.get("/users/<int:user_id>")
+@app.get("/users/<int:user_id>/")
 def show_user(user_id):
     """Show info on an user."""
 
@@ -90,5 +90,24 @@ def delete_user(user_id):
 
     return redirect('/users')
 
+@app.get('/users/<int:user_id>/posts/new')
+def show_add_post_form(user_id):
+    current_user = User.query.get_or_404(user_id)
+    return render_template('add-post.html', user = current_user)
 
+
+
+@app.post('/users/<int:user_id>/posts/new')
+def add_post(user_id):
+
+    current_user = User.query.get_or_404(user_id)
+    new_post = Post(title=request.form['title'], content=request.form['content'], user_id=user_id)
+
+
+    db.session.add(new_post)
+    db.session.commit()
+
+    user_posts = Post.query.filter_by(user_id = user_id).all()
+
+    return redirect(f"/users/{current_user.id}")
 

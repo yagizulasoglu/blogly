@@ -23,12 +23,12 @@ class User(db.Model):
         autoincrement=True)
 
     first_name = db.Column(
-        db.Text,
+        db.String(50),
         nullable=False,
     )
 
     last_name = db.Column(
-        db.Text,
+        db.String(50),
         nullable=False,
     )
 
@@ -36,3 +36,38 @@ class User(db.Model):
         db.Text,
         default = DEFAULT_IMAGE_URL
     )
+
+class Post(db.Model):
+    """Posts in the blog"""
+
+    __tablename__ = "posts"
+
+    user = db.relationship('User', backref='posts')
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+
+    title = db.Column(
+        db.String(50),
+        nullable=False,
+    )
+
+    content = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=db.func.now(),
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=False,
+        )
+

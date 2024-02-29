@@ -68,11 +68,11 @@ def show_edit_user(user_id):
 @app.post('/users/<int:user_id>/edit')
 def edit_user(user_id):
     """Edits the current user"""
-    current_user = User.query.get(user_id)
+    current_user = User.query.get_or_404(user_id)
 
     current_user.first_name = request.form['first_name']
     current_user.last_name = request.form['last_name']
-    current_user.img_url = request.form['image_url']
+    current_user.image_url = request.form['image_url']
 
     db.session.add(current_user)
     db.session.commit()
@@ -82,8 +82,8 @@ def edit_user(user_id):
 
 @app.post('/users/<int:user_id>/delete')
 def delete_user(user_id):
-    """Deletes the current user"""
-    current_user = User.query.get(user_id)
+    """Deletes the specified user"""
+    current_user = User.query.get_or_404(user_id)
 
     db.session.delete(current_user)
     db.session.commit()

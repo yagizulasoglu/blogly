@@ -48,6 +48,7 @@ class UserViewTestCase(TestCase):
         # rely on this user in our tests without needing to know the numeric
         # value of their id, since it will change each time our tests are run.
         self.user_id = test_user.id
+        self.first_name = test_user.first_name
 
     def tearDown(self):
         """Clean up any fouled transaction."""
@@ -69,16 +70,18 @@ class UserViewTestCase(TestCase):
             resp = c.get("/users/new")
             self.assertEqual(resp.status_code, 200)
             html = resp.get_data(as_text=True)
-            self.assertIn("<form", html)
+            self.assertIn("Create a User", html)
 
 
     def test_redirection(self):
         """Tests that redirect works."""
         with app.test_client() as client:
-            resp = client.post("/users/new",
-                               data = {'first_name': 'Yagiz' ,
-                                        "last_name": "Ulasoglu",
-                                        "image_url": ""})
+            resp = client.post(
+                "/users/new",
+                data = {
+                    'first_name': 'Yagiz' ,
+                    "last_name": "Ulasoglu",
+                    "image_url": ""})
             self.assertEqual(resp.status_code, 302)
             self.assertEqual(resp.location, "/users")
 
@@ -86,10 +89,13 @@ class UserViewTestCase(TestCase):
         """Tests that new user is added to database and that redirect contains
         the new user."""
         with app.test_client() as c:
-            resp = c.post("/users/new", follow_redirects=True,
-                          data = {'first_name': 'Yagiz' ,
-                                  "last_name":"Ulasoglu",
-                                    'image_url': ""})
+            resp = c.post(
+                "/users/new",
+                follow_redirects=True,
+                data = {
+                    'first_name': 'Yagiz' ,
+                    "last_name":"Ulasoglu",
+                    'image_url': ""})
             html = resp.get_data(as_text=True)
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Users", html)
@@ -104,17 +110,20 @@ class UserViewTestCase(TestCase):
             resp = c.get(f"/users/{self.user_id}")
             self.assertEqual(resp.status_code, 200)
             html = resp.get_data(as_text=True)
-            self.assertIn("<img", html)
+            self.assertIn(f'{self.first_name}', html)
 
 
     def test_edit_user(self):
         """Tests that editing a user works with the database and shows on
         the users page."""
         with app.test_client() as c:
-            resp = c.post(f"/users/{self.user_id}/edit", follow_redirects=True,
-                          data = {'first_name': "Dolphin" ,
-                                  "last_name":"Ulasoglu",
-                                    'image_url': ""})
+            resp = c.post(
+                f"/users/{self.user_id}/edit",
+                follow_redirects=True,
+                data = {
+                    'first_name': "Dolphin",
+                    "last_name":"Ulasoglu",
+                    'image_url': ""})
             html = resp.get_data(as_text=True)
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Ulasoglu", html)
@@ -126,14 +135,18 @@ class UserViewTestCase(TestCase):
         """Tests that deleting a user works with the database and that user no
          longer appears on the users page."""
         with app.test_client() as c:
-            resp = c.post(f"/users/{self.user_id}/delete", follow_redirects=True,
-                          data = {'first_name': "Dolphin" ,
-                                  "last_name":"Ulasoglu",
-                                    'image_url': ""})
+            resp = c.get("/users")
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("test1_first", html)
+            self.assertIn("test1_last", html)
+
+        with app.test_client() as c:
+            resp = c.post(f"/users/{self.user_id}/delete", follow_redirects=True)
             html = resp.get_data(as_text=True)
             self.assertEqual(resp.status_code, 200)
-            self.assertNotIn("Ulasoglu", html)
-            self.assertNotIn('Dolphin', html)
+            self.assertNotIn("test1_first", html)
+            self.assertNotIn('test1_last', html)
 
 
 

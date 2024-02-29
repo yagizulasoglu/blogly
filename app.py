@@ -59,6 +59,7 @@ def show_user(user_id):
 
 @app.get('/users/<int:user_id>/edit')
 def show_edit_user(user_id):
+    """Shows the edit page to the user"""
     user = User.query.get_or_404(user_id)
     return render_template('edit-profile.html', user = user)
 
@@ -66,6 +67,7 @@ def show_edit_user(user_id):
 
 @app.post('/users/<int:user_id>/edit')
 def edit_user(user_id):
+    """Edits the current user"""
     current_user = User.query.get(user_id)
 
     current_user.first_name = request.form['first_name']
@@ -76,4 +78,17 @@ def edit_user(user_id):
     db.session.commit()
 
     return redirect('/users')
+
+
+@app.post('/users/<int:user_id>/delete')
+def delete_user(user_id):
+    """Deletes the current user"""
+    current_user = User.query.get(user_id)
+
+    db.session.delete(current_user)
+    db.session.commit()
+
+    return redirect('/users')
+
+
 

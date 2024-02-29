@@ -61,3 +61,18 @@ class UserViewTestCase(TestCase):
             html = resp.get_data(as_text=True)
             self.assertIn("test1_first", html)
             self.assertIn("test1_last", html)
+
+    def test_new_user_form(self):
+        with app.test_client() as c:
+            resp = c.get("/users/new")
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("<form", html)
+
+    def test_show_user(self):
+        with app.test_client() as c:
+            resp = c.get("/users/<int:user_id>")
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("<img", html)
+

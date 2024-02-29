@@ -5,7 +5,7 @@ os.environ["DATABASE_URL"] = "postgresql:///blogly_test"
 from unittest import TestCase
 
 from app import app, db
-from models import DEFAULT_IMAGE_URL, User
+from models import DEFAULT_IMAGE_URL, User, Post
 
 # Make Flask errors be real errors, rather than HTML pages with error info
 app.config['TESTING'] = True
@@ -107,7 +107,7 @@ class UserViewTestCase(TestCase):
     def test_show_user(self):
         """Tests that showing a single user works."""
         with app.test_client() as c:
-            resp = c.get(f"/users/{self.user_id}")
+            resp = c.get(f"/users/{self.user_id}/")
             self.assertEqual(resp.status_code, 200)
             html = resp.get_data(as_text=True)
             self.assertIn(f'{self.first_name}', html)
@@ -149,4 +149,57 @@ class UserViewTestCase(TestCase):
             self.assertNotIn('test1_last', html)
 
 
+class PostViewTestCase(TestCase):
+    """Test views for posts."""
 
+    def setUp(self):
+        """Create test client, add sample data."""
+
+        db.session.rollback()
+
+        Post.query.delete()
+
+        test_user = User(
+            first_name="test1_first",
+            last_name="test1_last",
+            image_url=None,
+        )
+
+        db.session.add(test_user)
+        db.session.commit()
+
+        self.user_id = test_user.id
+
+        test_post = Post(
+            title="test1_title",
+            content="test1_content",
+            user_id = self.user_id,
+        )
+
+        db.session.add(test_user)
+        db.session.commit()
+
+        self.post_id = test_post.id
+
+
+    def tearDown(self):
+        """Clean up any fouled transaction."""
+
+        db.session.rollback()
+
+
+    def test_new_post_form(self):
+        """Tests showing the new post form."""
+        with app.test_client() as c:
+            resp = c.get(f"/users/{self.user_id}/posts/new")
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("Add Post for", html)
+
+    def test_post_list(self):
+        """Tests showing the posts."""
+        with app.test_client() as c:
+            resp = c.get(f"/posts/{self.post_id}/")
+            self.assertEqual(resp.status_code, 200)
+            html = resp.get_data(as_text=True)
+            self.assertIn("Add Post for", html)

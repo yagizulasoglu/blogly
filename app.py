@@ -111,3 +111,41 @@ def add_post(user_id):
 
     return redirect(f"/users/{current_user.id}")
 
+@app.get('/posts/<int:post_id>/')
+def show_post(post_id):
+    """Shows the post and enables the user to edit or delete it"""
+
+    post = Post.query.get_or_404(post_id)
+
+    return render_template('show-post.html', post = post)
+
+@app.get('/posts/<int:post_id>/edit')
+def show_edit(post_id):
+    """Shows the edit form to the user"""
+
+    post = Post.query.get_or_404(post_id)
+    return render_template('edit-post.html', post = post)
+
+@app.post('/posts/<int:post_id>/edit/')
+def edit_post(post_id):
+    """Edits the post"""
+    current_post = Post.query.get_or_404(post_id)
+
+    current_post.title = request.form['title']
+    current_post.content = request.form['content']
+
+    db.session.add(current_post)
+    db.session.commit()
+
+    return redirect(f'/posts/{post_id}/')
+
+@app.post('/posts/<int:post_id>/delete')
+def delete_post(post_id):
+    """Deletes the post"""
+    current_post = Post.query.get_or_404(post_id)
+    user_id = current_post.user_id
+
+    db.session.delete(current_post)
+    db.session.commit()
+
+    return redirect(f'/users/{user_id}')

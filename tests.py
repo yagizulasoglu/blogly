@@ -55,6 +55,7 @@ class UserViewTestCase(TestCase):
         db.session.rollback()
 
     def test_list_users(self):
+        """Tests that users request shows test instance."""
         with app.test_client() as c:
             resp = c.get("/users")
             self.assertEqual(resp.status_code, 200)
@@ -63,16 +64,76 @@ class UserViewTestCase(TestCase):
             self.assertIn("test1_last", html)
 
     def test_new_user_form(self):
+        """Tests adding a new user route."""
         with app.test_client() as c:
             resp = c.get("/users/new")
             self.assertEqual(resp.status_code, 200)
             html = resp.get_data(as_text=True)
             self.assertIn("<form", html)
 
-    def test_show_user(self):
+
+    def test_redirection(self):
+        """Tests that redirect works."""
+        with app.test_client() as client:
+            resp = client.post("/users/new",
+                               data = {'first_name': 'Yagiz' ,
+                                        "last_name": "Ulasoglu",
+                                        "image_url": ""})
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, "/users")
+
+    def test_new_user_form(self):
+        """Tests that new user is added to database and that redirect contains
+        the new user."""
         with app.test_client() as c:
-            resp = c.get("/users/<int:user_id>")
+            resp = c.post("/users/new", follow_redirects=True,
+                          data = {'first_name': 'Yagiz' ,
+                                  "last_name":"Ulasoglu",
+                                    'image_url': ""})
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Users", html)
+            self.assertIn('Yagiz', html)
+            self.assertIn('Ulasoglu', html)
+
+
+
+    def test_show_user(self):
+        """Tests that showing a single user works."""
+        with app.test_client() as c:
+            resp = c.get(f"/users/{self.user_id}")
             self.assertEqual(resp.status_code, 200)
             html = resp.get_data(as_text=True)
             self.assertIn("<img", html)
+
+
+    def test_edit_user(self):
+        """Tests that editing a user works with the database and shows on
+        the users page."""
+        with app.test_client() as c:
+            resp = c.post(f"/users/{self.user_id}/edit", follow_redirects=True,
+                          data = {'first_name': "Dolphin" ,
+                                  "last_name":"Ulasoglu",
+                                    'image_url': ""})
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Ulasoglu", html)
+            self.assertNotIn('Yagiz', html)
+            self.assertIn("Dolphin", html)
+
+
+    def test_delete_user(self):
+        """Tests that deleting a user works with the database and that user no
+         longer appears on the users page."""
+        with app.test_client() as c:
+            resp = c.post(f"/users/{self.user_id}/delete", follow_redirects=True,
+                          data = {'first_name': "Dolphin" ,
+                                  "last_name":"Ulasoglu",
+                                    'image_url': ""})
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn("Ulasoglu", html)
+            self.assertNotIn('Dolphin', html)
+
+
 

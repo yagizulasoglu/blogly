@@ -97,7 +97,8 @@ def delete_user(user_id):
 @app.get('/users/<int:user_id>/posts/new')
 def show_add_post_form(user_id):
     current_user = User.query.get_or_404(user_id)
-    return render_template('add-post.html', user = current_user)
+    tags = Tag.query.all()
+    return render_template('add-post.html', user = current_user, tags=tags)
 
 
 
@@ -105,11 +106,20 @@ def show_add_post_form(user_id):
 def add_post(user_id):
     """Adds post to the database and reirects to the users route."""
     current_user = User.query.get_or_404(user_id)
-    new_post = Post(title=request.form['title'], content=request.form['content'], user_id=user_id)
 
+    new_post = Post(title=request.form['title'], content=request.form['content'], user_id=user_id)
 
     db.session.add(new_post)
     db.session.commit()
+
+    tag_inputs = request.form.getlist('tags')
+
+
+    for checkbox in tag_inputs:
+        if checkbox:
+            tag = Tag.query.filter_by(name='catipiller')
+            tag_add_post = Post.query.filter_by(id=27)
+            tag_add_post.tags.append(tag)
 
 
 

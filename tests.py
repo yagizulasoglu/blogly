@@ -172,7 +172,7 @@ class PostViewTestCase(TestCase):
         # db.session.add(test_user)
         # db.session.commit()
         self.user_id = test_user.id
-        print(self.user_id, "lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+
 
         test_post = Post(
             title="test1_title",

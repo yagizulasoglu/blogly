@@ -7,6 +7,13 @@
   <h2>Title <input required name="title"></h2>
   <h2>Content <input required name="content"></h2>
   <button type="submit">Add</button>
+  {%for tag in tags%}
+  <li>
+    <input type="checkbox" name="tags" value='{{tag.name}}'>
+    <p>{{tag.name}}</p>
+  </li>
+  {%endfor%}
 </form>
+
 <a href="/users/{{user.id}}"><button>Cancel</button></a>
 {% endblock %}

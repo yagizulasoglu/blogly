@@ -71,3 +71,41 @@ class Post(db.Model):
         nullable=False,
         )
 
+class PostTag(db.Model):
+    """Tag on one post"""
+    __tablename__ = "post_tags"
+
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey('posts.id'),
+        primary_key=True,
+        )
+
+    tag_id = db.Column(
+        db.Integer,
+        db.ForeignKey('tags.id'),
+        primary_key=True,
+    )
+
+class Tag(db.Model):
+    """Tags that can be added to posts"""
+    __tablename__ = "tags"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    name = db.Column(
+        db.String(50),
+        nullable=False,
+        unique=True
+    )
+
+    posts = db.relationship(
+        'Post', secondary='post_tags', backref='tags'
+    )
+
+
+
+

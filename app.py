@@ -3,7 +3,7 @@
 import os
 
 from flask import Flask, redirect, render_template, request
-from models import db, connect_db, User, Post
+from models import db, connect_db, User, Post, Tag, PostTag
 
 
 app = Flask(__name__)
@@ -84,6 +84,10 @@ def edit_user(user_id):
 def delete_user(user_id):
     """Deletes the specified user"""
     current_user = User.query.get_or_404(user_id)
+    current_user_posts = Post.query.filter_by(user_id=user_id).all()
+
+    for post in current_user_posts:
+        db.session.delete(post)
 
     db.session.delete(current_user)
     db.session.commit()
@@ -148,3 +152,64 @@ def delete_post(post_id):
     db.session.commit()
 
     return redirect(f'/users/{current_post.user_id}')
+
+@app.get('/tags')
+def get_tags():
+    """Lists all tags"""
+
+    tags = Tag.query.all()
+    return render_template('list-tag.html', tags = tags)
+
+@app.get('/tags/<int:tag_id>')
+def show_tag(tag_id):
+    """Shows detail about a tag"""
+
+    tag = Tag.query.get_or_404(tag_id)
+
+    return render_template('show-tag.html', tag = tag)
+
+@app.get('/tags/new')
+def form_tag():
+    """Shows the form to add a new tag."""
+
+    return render_template('add-tag.html')
+
+@app.post('/tags/new')
+def submit_tag():
+    """Adds a new tag"""
+    new_tag = Tag(name=request.form['name'])
+
+    db.session.add(new_tag)
+    db.session.commit()
+
+    return redirect("/tags")
+
+@app.get('/tags/<int:tag_id>/edit')
+def show_edit_tag(tag_id):
+    """Edits the tag"""
+
+    tag = Tag.query.get_or_404(tag_id)
+    return render_template('edit-tag.html', tag = tag)
+
+
+@app.post('/tags/<int:tag_id>/edit')
+def edit_tag(tag_id):
+    """Edits the tag"""
+    current_tag = Tag.query.get_or_404(tag_id)
+
+    current_tag.name = request.form['name']
+
+    db.session.commit()
+
+    return redirect(f'/tags')
+
+@app.post('/tags/<int:tag_id>/delete')
+def delete_tags(tag_id):
+    """Deletes the tag"""
+    current_tag = Tag.query.get_or_404(tag_id)
+
+
+    db.session.delete(current_tag)
+    db.session.commit()
+
+    return redirect(f'/tags')
